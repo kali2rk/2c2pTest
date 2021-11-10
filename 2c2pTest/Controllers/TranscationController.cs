@@ -18,17 +18,57 @@ namespace _2c2pTest.Controllers
             _db = db;
         }
 
-        [HttpGet("getBookingbyId")]
-        public IActionResult Get([FromRoute] String Uid)
+        [HttpGet("Currency")]
+        public IActionResult byCurrency()
         {
             try
             {
-               
-                return Ok();
+                var curency = _db.Transactions.Select(x=>x.CurrencyCode).ToList();
+                if (curency.Count == 0)
+                {
+                    return StatusCode(404, "No Record Found");
+                }
+                return Ok(curency);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error accoured" + ex.ToString());
+                return StatusCode(500, "Bad Request" + ex.ToString());
+            }
+        }
+
+        [HttpGet("DateRange")]
+        public IActionResult byDateRange()
+        {
+            try
+            {
+                var curency = _db.Transactions.Select(x => x.CurrencyCode).ToList();
+                if (curency.Count == 0)
+                {
+                    return StatusCode(404, "No Record Found");
+                }
+                return Ok(curency);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Bad Request" + ex.ToString());
+            }
+        }
+
+        [HttpGet("Status")]
+        public IActionResult byStatus()
+        {
+            try
+            {
+                var curency = _db.Transactions.Select(x => x.Status).ToList();
+                if (curency.Count == 0)
+                {
+                    return StatusCode(404, "No Record Found");
+                }
+                return Ok(curency);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Bad Request" + ex.ToString());
             }
         }
     }
