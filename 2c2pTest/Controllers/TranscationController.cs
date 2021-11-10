@@ -71,5 +71,35 @@ namespace _2c2pTest.Controllers
                 return StatusCode(500, "Bad Request" + ex.ToString());
             }
         }
+
+
+        [HttpGet("AllTransaction")]
+        public IActionResult allTrans()
+        {
+            try
+            {
+                // t => t.Title.Substring(0, 5).ToLower()
+                //var trans = _db.Transactions.ToList();
+                var trans = (from b in _db.Transactions
+                             select new
+                             {
+                                 id = b.TransactionId,
+                                 payment = b.Amount + " " + b.CurrencyCode,
+                                 status = _db.Transactions.Where(x => x.FormatType == "XML").Select(x => x.Status.Substring(0,1)).FirstOrDefault(),
+                             }).ToList();
+
+                if (trans.Count == 0)
+                {
+                    return StatusCode(404, "No Record Found");
+                }
+
+                return Ok(trans);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Bad Request" + ex.ToString());
+            }
+        }
+
     }
 }
