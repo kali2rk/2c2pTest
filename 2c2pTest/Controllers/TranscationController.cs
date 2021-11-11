@@ -1,4 +1,5 @@
-﻿using _2c2pTest.Models;
+﻿using _2c2pTest.LogFile;
+using _2c2pTest.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -89,7 +90,8 @@ namespace _2c2pTest.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Bad Request" + ex.ToString());
+                return StatusCode(500, "Bad Request");
+                logfile.WriteLog("Date Range", ex.ToString());
             }
         }
 
@@ -244,6 +246,7 @@ namespace _2c2pTest.Controllers
                                 {
                                     message = "error on uploading...";
                                     return StatusCode(400, message);
+                                    bool checks = logfile.WriteLog("Save in CSV", ex.ToString());
                                 }
 
 
@@ -312,10 +315,12 @@ namespace _2c2pTest.Controllers
                                     return StatusCode(200, message);
 
                                 }
-                                catch(Exception xx)
+                                catch(Exception ex)
                                 {
-                                    message = xx.ToString();
+                                    message = "Bad Request";
                                     return StatusCode(400, message);
+                                    bool checks = logfile.WriteLog("Save in XML", ex.ToString());
+
                                 }
                             }
                         }
@@ -332,6 +337,7 @@ namespace _2c2pTest.Controllers
                 return new JsonResult(x.Message);
             }
         }
+
 
         public static Dictionary<string, string> Currencies = new Dictionary<string, string>() {
                                                     {"AED", "د.إ.‏"},
