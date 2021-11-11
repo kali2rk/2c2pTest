@@ -99,12 +99,12 @@ namespace _2c2pTest.Controllers
         {
             try
             {
-                var curency = _db.Transactions.Where(x => x.Status == status).ToList();
-                if (curency.Count == 0)
+                var stts = _db.Transactions.Where(x => x.Status == status).ToList();
+                if (stts.Count == 0)
                 {
                     return StatusCode(404, "No Record Found");
                 }
-                return Ok(curency);
+                return Ok(stts);
             }
             catch (Exception ex)
             {
@@ -124,8 +124,8 @@ namespace _2c2pTest.Controllers
                              select new
                              {
                                  id = b.TransactionId,
-                                 payment = b.Amount + " " + b.CurrencyCode,
-                                 status = _db.Transactions.Where(x => x.FormatType == "XML").Select(x => x.Status.Substring(0, 1)).FirstOrDefault(),
+                                 payment = b.Amount.ToString() + " " + b.CurrencyCode,
+                                 status = b.Status.Substring(0, 1)
                              }).ToList();
 
                 if (trans.Count == 0)
@@ -255,7 +255,6 @@ namespace _2c2pTest.Controllers
 
                                     List<Transactioninfo> transXML = new List<Transactioninfo>();
                                     List<TransactionPay> transPay = new List<TransactionPay>();
-                                    List<AllTransaction> transAll = new List<AllTransaction>();
 
                                     //Load the XML file in XmlDocument.
                                     XmlDocument doc = new XmlDocument();
