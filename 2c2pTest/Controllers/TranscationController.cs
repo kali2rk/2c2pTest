@@ -57,17 +57,35 @@ namespace _2c2pTest.Controllers
             }
         }
 
-        [HttpGet("DateRange")]
-        public IActionResult byDateRange()
+
+        //Call by json value in body
+        [Route("GetDate")]
+        [HttpPost]
+        public IActionResult byDateRange([FromBody] string date)
         {
             try
             {
-                var curency = _db.Transactions.Select(x => x.CurrencyCode).ToList();
-                if (curency.Count == 0)
+                List<string> dtList = date.Split(',').ToList<string>();
+                dtList.Reverse();
+
+                //var curency = _db.Transactions.Select(x => x.CurrencyCode).ToList();
+                var dateRange = (from b in _db.Transactions
+                            where b.TransactionDate <= Convert.ToDateTime(dtList[0]) && b.TransactionDate >= Convert.ToDateTime(dtList[1])
+                            select new
+                            {
+                                transactionId = b.TransactionId,
+                                amount = b.Amount,
+                                currencyCode = b.CurrencyCode,
+                                transactionDate = b.TransactionDate,
+                                status = b.Status,
+
+                            }).ToList();
+
+                if (dateRange.Count == 0)
                 {
                     return StatusCode(404, "No Record Found");
                 }
-                return Ok(curency);
+                return Ok(dateRange);
             }
             catch (Exception ex)
             {
@@ -75,12 +93,13 @@ namespace _2c2pTest.Controllers
             }
         }
 
-        [HttpGet("Status")]
-        public IActionResult byStatus([FromBody] string rptNo)
+        [Route("GetStatus")]
+        [HttpPost]
+        public IActionResult byStatus([FromBody] string status)
         {
             try
             {
-                var curency = _db.Transactions.Select(x => x.Status).ToList();
+                var curency = _db.Transactions.Where(x => x.Status == status).ToList();
                 if (curency.Count == 0)
                 {
                     return StatusCode(404, "No Record Found");
