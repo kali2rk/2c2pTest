@@ -253,45 +253,67 @@ namespace _2c2pTest.Controllers
                                 try
                                 {
 
-                                    List<TransactionXML> transXML = new List<TransactionXML>();
+                                    List<Transactioninfo> transXML = new List<Transactioninfo>();
+                                    List<TransactionPay> transPay = new List<TransactionPay>();
+                                    List<AllTransaction> transAll = new List<AllTransaction>();
 
                                     //Load the XML file in XmlDocument.
                                     XmlDocument doc = new XmlDocument();
                                     doc.Load(physicalPath);
 
-                                    //Loop through the selected Nodes.
-                                    foreach (XmlNode node in doc.SelectNodes("/Transactions/Transaction"))
+                                    XmlNodeList eNodes = doc.SelectNodes("Transactions/Transaction");
+
+                                    foreach (XmlNode ep in eNodes)
                                     {
-                                        //Fetch the Node values and assign it to Model.
-                                        transXML.Add(new TransactionXML
+                                        transXML.Add(new Transactioninfo()
                                         {
-                                            //id = int.Parse(node["Id"].InnerText),
-                                            id = node["id"].InnerText,
-                                            CurrencyCode = node["Name"].InnerText,
-                                            Status = node["Country"].InnerText
+                                            id = ep["id"].InnerXml,
+                                            TransactionDate = Convert.ToDateTime(ep["TransactionDate"].InnerText, CultureInfo.GetCultureInfo("ms-MY").DateTimeFormat),
+                                            Status = ep["Status"].InnerText
                                         });
                                     }
 
-                                    //List<TransactionXML> obList = new List<TransactionXML>();
-                                    //XmlDocument doc = new XmlDocument();
-                                    //doc.Load(physicalPath);
+                                    XmlNodeList eNodePay = doc.SelectNodes("Transactions/Transaction/PaymentDetails");
+                                    foreach (XmlNode ep in eNodePay)
+                                    {
+                                        var checkCurency = Currencies.ContainsKey(ep["CurrencyCode"].InnerXml);
+                                        if (checkCurency == false)
+                                        {
+                                            message = "Currency Code invalid";
+                                            return StatusCode(400, message);
+                                        }
+                                        else
+                                        {
+                                            transPay.Add(new TransactionPay()
+                                            {
 
-                                    //XmlNodeList elemList = doc.GetElementsByTagName("blog");
-                                    //TransactionXML _obj = null;
+                                                CurrencyCode = ep["CurrencyCode"].InnerXml,
+                                                Amount = (float)Convert.ToDouble(ep["Amount"].InnerText),
+                                            });
+                                        }
+                                    }
 
-                                    //foreach (XmlNode chldNode in elemList)
-                                    //{
-                                    //    _obj = new TransactionXML();
-                                    //    _obj.id = chldNode.Attributes["id"].Value;
-                                    //    _obj.TransactionDate = chldNode.Attributes["TransactionDate"].Value;
-                                    //    _obj.Amount = chldNode.Attributes["Amount"].Value;
-                                    //    _obj.CurrencyCode = chldNode.Attributes["CurrencyCode"].Value;
-                                    //    _obj.Status = chldNode.Attributes["Status"].Value;
+                                    var allTrans = transXML.Zip(transPay, (n, w) => new { info = n, pay = w });
 
-                                    //    obList.Add(_obj);
-                                    //}
+                                    foreach(var gt in allTrans)
+                                    {
+                                        Transaction tr = new Transaction();
+                                        tr.CurrencyCode = gt.pay.CurrencyCode;
+                                        tr.Amount = gt.pay.Amount;
+                                        tr.TransactionDate = gt.info.TransactionDate;
+                                        tr.TransactionId = gt.info.id;
+                                        tr.Status = gt.info.Status;
+                                        tr.FormatType = ext.Substring(1, 3);
 
-                                }catch(Exception xx)
+                                        _db.Transactions.Add(tr);
+                                        _db.SaveChanges();
+                                    }
+
+                                    message = "Success";
+                                    return StatusCode(200, message);
+
+                                }
+                                catch(Exception xx)
                                 {
                                     message = xx.ToString();
                                     return StatusCode(400, message);
